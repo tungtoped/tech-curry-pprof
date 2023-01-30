@@ -23,6 +23,7 @@ const (
 	userFilepath = "users.csv"
 )
 
+// hint: need changes to activate pprof
 func main() {
 	http.HandleFunc("/register", registerUser)
 	http.HandleFunc("/login", login)
@@ -103,7 +104,7 @@ func registerUser(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("User created successfully"))
 }
 
-// jebakan betmen
+// this seems sus
 func isValidEmail(email string) bool {
 	re := regexp.MustCompile(`^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$`)
 
@@ -114,13 +115,12 @@ func isValidEmail(email string) bool {
 	return re.MatchString(email)
 }
 
+// this function may need attention
 func SaveUserData(user User, filepath string) error {
 	file, err := os.Create(filepath)
 	if err != nil {
 		return err
 	}
-	// ini nanti juga dihapus
-	// defer file.Close()
 
 	w := csv.NewWriter(file)
 
@@ -142,8 +142,8 @@ func SaveUserData(user User, filepath string) error {
 	return nil
 }
 
+// what can be done here that can improve performance but still serve the same purpose?
 func hashPassword(password string) (string, error) {
-	// 15 itu cost, kegedean costnya bisa bikin server crash
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 15)
 	return string(bytes), err
 }
@@ -152,13 +152,12 @@ func checkPassword(hashedPassword string, password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }
 
+// there are 2 points that need change here
 func getUserDataWithPassword(username, password string) (User, error) {
 	f, err := os.Open(userFilepath)
 	if err != nil {
 		return User{}, err
 	}
-	// ini nanti dihapus
-	// defer f.Close()
 
 	reader := csv.NewReader(f)
 
@@ -173,8 +172,6 @@ func getUserDataWithPassword(username, password string) (User, error) {
 	for _, record := range records {
 		wg.Add(1)
 		go func(record []string) {
-			// ini nanti dihapus di soalnya
-			// defer wg.Done()
 
 			if record[0] == username {
 				err = checkPassword(record[2], password)
@@ -193,7 +190,7 @@ func getUserDataWithPassword(username, password string) (User, error) {
 	return user, nil
 }
 
-// ini ngeloop, csvnya bakal dipopulate banyak data. bakal lambat disini
+// what can be done here that can improve performance but still serve the same purpose? be creative
 func isUserExists(username string) bool {
 	f, err := os.Open(userFilepath)
 	if err != nil {
