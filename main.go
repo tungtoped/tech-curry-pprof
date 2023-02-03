@@ -117,12 +117,13 @@ func isValidEmail(email string) bool {
 
 // this function may need attention
 func SaveUserData(user User, filepath string) error {
-	file, err := os.Create(filepath)
+	file, err := os.OpenFile(filepath, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
 	if err != nil {
 		return err
 	}
 
 	w := csv.NewWriter(file)
+	defer w.Flush()
 
 	hashedPassword, err := hashPassword(user.Password)
 	if err != nil {
@@ -137,7 +138,6 @@ func SaveUserData(user User, filepath string) error {
 	if err := w.Write([]string{user.Username, user.Email, hashedPassword}); err != nil {
 		return err
 	}
-	w.Flush()
 
 	return nil
 }
