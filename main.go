@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"regexp"
+	"strings"
 	"sync"
 
 	"golang.org/x/crypto/bcrypt"
@@ -29,7 +31,22 @@ func main() {
 	http.HandleFunc("/login", login)
 	http.HandleFunc("/", helloWorld)
 	fmt.Println("Server started at localhost:8080")
-	http.ListenAndServe(":8080", nil)
+
+	for i := 0; i < 3; i++ {
+		response, err := http.Post("localhost:6060", "application/json", strings.NewReader("{\"key\":\"value\"}"))
+		if err != nil {
+			fmt.Printf("The HTTP request failed with error %s\n", err)
+		} else {
+			data, _ := ioutil.ReadAll(response.Body)
+			fmt.Println(string(data))
+		}
+	}
+
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
+
+	http.ListenAndServe(":6060", nil)
 }
 
 func helloWorld(w http.ResponseWriter, r *http.Request) {
